@@ -1,9 +1,9 @@
-﻿using OpenQA.Selenium;
+﻿using AutoItX3Lib;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading;
-using AutoItX3Lib;
 
 namespace TestWebScraping
 {
@@ -43,6 +43,9 @@ namespace TestWebScraping
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// Manage the basic commands to run the login.
+        /// </summary>
         static void LoginAutomated()
         {
             try
