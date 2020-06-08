@@ -4,6 +4,8 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading;
+using OpenQA;
+using OpenQA.Selenium.Interactions;
 
 namespace TestWebScraping
 {
@@ -22,16 +24,18 @@ namespace TestWebScraping
             {
                 webDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
                 webDriver.Navigate().GoToUrl(siteUrl);
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
                 LoginAutomated();
-                Thread.Sleep(3000);
+                Thread.Sleep(5000);
                 webDriver.Navigate().GoToUrl(multiLane);
-                Thread.Sleep(3000);
+                Thread.Sleep(10000);
                 UploadLanesTemplate();
-                Thread.Sleep(2000);
+                Thread.Sleep(10000);
                 ReviewWindow();
-                Thread.Sleep(2000);
+                Thread.Sleep(10000);
                 SubmitRequestWindow();
+                Thread.Sleep(20000);
+                DownloadFile();
             }
             catch (Exception ex)
             {
@@ -86,7 +90,7 @@ namespace TestWebScraping
                 AutoItX3 autoIt = new AutoItX3();
                 autoIt.ControlFocus("Open", "", "Edit1");
                 Thread.Sleep(1000);
-                autoIt.ControlSetText("Open", "", "Edit1", @"C:\Users\EBAENA\Downloads\Request lanes template.csv");
+                autoIt.ControlSetText("Open", "", "Edit1", @"C:\Users\Orlando Galvez\Downloads\18225 matrix CSV File.csv");
                 Thread.Sleep(1000);
                 autoIt.ControlClick("Open", "", "Button1");
             }
@@ -100,7 +104,7 @@ namespace TestWebScraping
         {
             try
             {
-                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(10));
+                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(25));
                 IWebElement element = wait.Until(e => e.FindElement(By.XPath("//*[@id='main']/div/div[2]/div/div[1]/footer/div[3]/button")));
                 element.Click();
             }
@@ -114,12 +118,38 @@ namespace TestWebScraping
         {
             try
             {
-                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(10));
-                IWebElement element = wait.Until(e => e.FindElement(By.XPath("//*[@id='main']/div/div[2]/div/div[1]/footer/div[3]/button[2]")));
+                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(30));
+                IWebElement chckElement = wait.Until(e => e.FindElement(By.XPath("//*[@id='submitRequestForm']/div[10]/label[1]")));
+                chckElement.Click();
+                IWebElement listElement = wait.Until(e => e.FindElement(By.XPath("//*[@id='qa-select--contract-balance']")));
+                listElement.Click();
+                Actions keyDown = new Actions(webDriver);
+                keyDown.SendKeys(Keys.Tab + Keys.Tab + Keys.Tab + Keys.Enter).Perform();
+                IWebElement mktElement = wait.Until(e => e.FindElement(By.XPath("//*[@id='submitRequestForm']/div[10]/div[3]/span/span/div[1]/div[1]/div[2]")));
+                mktElement.Click();
+                Actions mktDown = new Actions(webDriver);
+                mktDown.SendKeys(Keys.Tab + Keys.Tab + Keys.Enter).Perform();
+                IWebElement button = wait.Until(e => e.FindElement(By.XPath("//*[@id='main']/div/div[2]/div/div[1]/footer/div[3]/button[2]")));
+                button.Click();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        static void DownloadFile()
+        {
+            try
+            {
+                Thread.Sleep(120000);
+                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(60));
+                IWebElement element = wait.Until(e => e.FindElement(By.XPath("//*[@id='main']/div/div[1]/div[2]/div[1]/table/tbody/tr/td[8]/div[1]/div/div[1]/div[2]/span[2]/a")));
                 element.Click();
             }
             catch (Exception ex)
             {
+
                 throw ex;
             }
         }
