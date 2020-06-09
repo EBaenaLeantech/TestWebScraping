@@ -6,6 +6,9 @@ using System;
 using System.Threading;
 using OpenQA;
 using OpenQA.Selenium.Interactions;
+using ExcelDataReader;
+using System.IO;
+
 
 namespace TestWebScraping
 {
@@ -36,6 +39,8 @@ namespace TestWebScraping
                 SubmitRequestWindow();
                 Thread.Sleep(20000);
                 DownloadFile();
+                Thread.Sleep(5000);
+                ExcelReader();
             }
             catch (Exception ex)
             {
@@ -153,6 +158,25 @@ namespace TestWebScraping
                 throw ex;
             }
         }
+
+        static void ExcelReader() 
+        {
+            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+            var filePath = @"C:\Users\Orlando Galvez\Downloads\18225 matrix CSV File.csv-202006030850.csv";
+            FileStream stream = File.Open(filePath, FileMode.Open, FileAccess.Read);
+            IExcelDataReader excelReader = ExcelReaderFactory.CreateCsvReader(stream);
+            ExcelDataSetConfiguration excelDataSetConfiguration = new ExcelDataSetConfiguration
+            {
+                ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                {
+                    UseHeaderRow = true
+                }
+            };
+            var dataSet = excelReader.AsDataSet(excelDataSetConfiguration);
+            var dataTable = dataSet.Tables[0];
+            excelReader.Close();
+        }
+
     }
 
     public static class Extensions
@@ -161,5 +185,6 @@ namespace TestWebScraping
         {
             return wait.Until(e => e.FindElement(By.Id(value)));
         }
+
     }
 }
