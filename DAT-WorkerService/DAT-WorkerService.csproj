@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>dotnet-DAT_WorkerService-669DE554-9E79-4886-ACF8-9428B2CC4F39</UserSecretsId>
+    <RootNamespace>DAT_WorkerService</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.3" />
+  </ItemGroup>
+</Project>
