@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using AutoMapper;
+using DAT_Download_Service.Mapping;
 using System.ServiceProcess;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DAT_Download_Service
 {
@@ -19,6 +16,7 @@ namespace DAT_Download_Service
             {
                 new DatDownloadService()
             };
+
             ServiceBase.Run(ServicesToRun);
         }
     }
