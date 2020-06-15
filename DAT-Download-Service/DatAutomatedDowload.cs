@@ -8,6 +8,11 @@ using OpenQA.Selenium.Interactions;
 using ExcelDataReader;
 using System.IO;
 using System.Linq;
+using AutoMapper;
+using DAT_Download_Service.Mapping;
+using DAT_Download_Service.Models;
+using System.Data;
+using System.Collections.Generic;
 
 namespace DAT_Download_Service
 {
@@ -22,6 +27,10 @@ namespace DAT_Download_Service
         public static string filePath = @"C:/Users/Orlando Galvez/Downloads/";
         public static string requestTemplatePath = @"C:\Users\Orlando Galvez\Downloads\";
         public static string timeZone = "Pacific Standard Time";
+
+        public static MapperConfiguration config = new MapperConfiguration(cfg => {
+            cfg.AddProfile(new MapperProfile());
+        });
 
         public static void RunWebScraping()
         {
@@ -212,8 +221,20 @@ namespace DAT_Download_Service
                     UseHeaderRow = true
                 }
             };
+
             var dataSet = excelReader.AsDataSet(excelDataSetConfiguration);
             var dataTable = dataSet.Tables[0];
+
+            IMapper mapper = config.CreateMapper();
+            List<DataRow> rows = new List<DataRow>(dataTable.Rows.OfType<DataRow>());
+            List<DATRateData> result = mapper.Map<List<DataRow>, List<DATRateData>>(rows);
+
+            using (var context = new DownloadContext())
+            {
+                context.DatRatesData.AddRange(result);
+                context.SaveChanges();
+            }
+
             excelReader.Close();
         }
 

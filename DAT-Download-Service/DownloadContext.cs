@@ -3,15 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DAT_Download_Service
 {
-    public class Context : DbContext
+    public class DownloadContext : DbContext
     {
-        public Context()
+        public DownloadContext()
         {
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=LAPTOP-S6LCQIHP\SQLDEV_2019;User ID=sa;Password=Odragde.2020;Database=DatApi;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+            optionsBuilder.UseSqlServer(@"Server=.\SQLDEV_2019;User ID=sa;Password=Odragde.2020;Database=DatApi;");
         }
 
         public DbSet<DATRateData> DatRatesData { get; set; }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace DAT_Download_Service.Models
 {
-    public class ContractRateDataModel
+    public class ContractRateDataModel : RateDetailData
     {
         /// <summary>
         /// 
@@ -20,46 +20,6 @@ namespace DAT_Download_Service.Models
         /// <summary>
         /// 
         /// </summary>
-        public string DestinationGeoType { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float AvgLinehaulRate { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float LowLinehaulRate { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float HighLinehaulRate { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float FuelSurcharge { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float AccessorialsExcludingFuel { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Companies { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public int Reports { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        public float ContractLinehaulRateStdDev { get; set; }
+        public double AccessorialsExcludingFuel { get; set; }
     }
 }

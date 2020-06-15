@@ -1,15 +1,19 @@
 ﻿using AutoItX3Lib;
+using AutoMapper;
+using DAT_Download_Service;
+using DAT_Download_Service.Mapping;
+using DAT_Download_Service.Models;
+using ExcelDataReader;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Threading;
-using OpenQA;
-using OpenQA.Selenium.Interactions;
-using ExcelDataReader;
+using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
-
+using System.Threading;
 
 namespace TestWebScraping
 {
@@ -21,32 +25,36 @@ namespace TestWebScraping
         public static string[] loginControlIds = new string[] { "username", "password", "login" };
         public static string[] loginControlValues = new string[] { "covenantcxn1", "Connexion1", "" };
         public static string fileName = "18225 matrix CSV File.csv";
-        public static string filePath = @"C:/Users/Orlando Galvez/Downloads/";
-        public static string requestTemplatePath = @"C:\Users\Orlando Galvez\Downloads\";
+        public static string filePath = @"C:\Users\EBAENA\Downloads";
+        public static string requestTemplatePath = @"C:\Users\EBAENA\Downloads";
         public static string timeZone = "Pacific Standard Time";
+
+        public static MapperConfiguration config = new MapperConfiguration(cfg => {
+            cfg.AddProfile(new MapperProfile());
+        });
 
         static void Main(string[] args)
         {
             Console.WriteLine("Web scraping being...");
             try
             {
-                webDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
-                webDriver.Navigate().GoToUrl(siteUrl);
-                Thread.Sleep(5000);
-                LoginAutomated();
-                Thread.Sleep(5000);
-                webDriver.Navigate().GoToUrl(multiLane);
-                Thread.Sleep(10000);
-                UploadLanesTemplate();
-                Thread.Sleep(10000);
-                ReviewWindow();
-                Thread.Sleep(10000);
-                SubmitRequestWindow();
-                Thread.Sleep(20000);
-                DownloadFile();
-                Thread.Sleep(20000);
-                webDriver.Close();
-                Thread.Sleep(5000);
+                //webDriver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(30);
+                //webDriver.Navigate().GoToUrl(siteUrl);
+                //Thread.Sleep(5000);
+                //LoginAutomated();
+                //Thread.Sleep(5000);
+                //webDriver.Navigate().GoToUrl(multiLane);
+                //Thread.Sleep(10000);
+                //UploadLanesTemplate();
+                //Thread.Sleep(10000);
+                //ReviewWindow();
+                //Thread.Sleep(10000);
+                //SubmitRequestWindow();
+                //Thread.Sleep(20000);
+                //DownloadFile();
+                //Thread.Sleep(20000);
+                //webDriver.Close();
+                //Thread.Sleep(5000);
                 ExcelReader();
             }
             catch (Exception ex)
@@ -216,6 +224,17 @@ namespace TestWebScraping
             };
             var dataSet = excelReader.AsDataSet(excelDataSetConfiguration);
             var dataTable = dataSet.Tables[0];
+
+            IMapper mapper = config.CreateMapper();
+            List<DataRow> rows = new List<DataRow>(dataTable.Rows.OfType<DataRow>());
+            List<DATRateData> result = mapper.Map<List<DataRow>, List<DATRateData>>(rows);
+
+            using (var context = new DownloadContext())
+            {
+                context.DatRatesData.AddRange(result);
+                context.SaveChanges();
+            }
+
             excelReader.Close();
         }
 

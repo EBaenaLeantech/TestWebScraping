@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DAT_Download_Service.Models;
+using System;
 using System.Data;
 
 namespace DAT_Download_Service.Mapping
@@ -14,25 +15,36 @@ namespace DAT_Download_Service.Mapping
                 .ForMember(d => d.DestinationPostalCode, o => o.MapFrom(s => s["Dest Postal Code"]))
                 .ForMember(d => d.DestinationState, o => o.MapFrom(s => s["Dest State"]))
                 .ForMember(d => d.DestinationCity, o => o.MapFrom(s => s["Dest City"]))
-                .ForMember(d => d.DestinationPostalCode, o => o.MapFrom(s => s["Orig Postal Code"]))
-                .ForMember(d => d.DestinationState, o => o.MapFrom(s => s["Orig State"]))
-                .ForMember(d => d.DestinationCity, o => o.MapFrom(s => s["Orig City"]));
-
-            CreateMap<DataRow, SpotRateDataModel>()
-                .ForMember(d => d.AvgLinehaulRate, o => o.MapFrom(s => s["Spot Avg Linehaul Rate"]))
-                .ForMember(d => d.LowLinehaulRate, o => o.MapFrom(s => s["Spot Low Linehaul Rate"]))
-                .ForMember(d => d.HighLinehaulRate, o => o.MapFrom(s => s["Spot High Linehaul Rate"]))
-                .ForMember(d => d.FuelSurcharge, o => o.MapFrom(s => s["Spot Fuel Surcharge"]));
-
-            CreateMap<DataRow, ContractRateDataModel>()
-                .ForMember(d => d.AvgLinehaulRate, o => o.MapFrom(s => s["Contract Avg Linehaul Rate"]))
-                .ForMember(d => d.LowLinehaulRate, o => o.MapFrom(s => s["Contract Low Linehaul Rate"]))
-                .ForMember(d => d.HighLinehaulRate, o => o.MapFrom(s => s["Contract High Linehaul Rate"]))
-                .ForMember(d => d.FuelSurcharge, o => o.MapFrom(s => s["Contract Fuel Surcharge"]))
-                .ForMember(d => d.AccessorialsExcludingFuel, o => o.MapFrom(s => s["Contract Avg Accessorial Excludes Fuel"]))
-                .ForMember(d => d.Companies, o => o.MapFrom(s => s["Contract # of Companies"]))
-                .ForMember(d => d.Reports, o => o.MapFrom(s => s["Contract # of Reports"]))
-                .ForMember(d => d.ContractLinehaulRateStdDev, o => o.MapFrom(s => s["Contract Linehaul Rate StdDev"]));
+                .ForMember(d => d.OriginPostalCode, o => o.MapFrom(s => s["Orig Postal Code"]))
+                .ForMember(d => d.OriginState, o => o.MapFrom(s => s["Orig State"]))
+                .ForMember(d => d.OriginCity, o => o.MapFrom(s => s["Orig City"]))
+                .AfterMap((origin, dest) =>
+                {
+                    dest.ContractRateData = new ContractRateDataModel();
+                    dest.ContractRateData.OriginGeoExpansion = origin["Contract Origin Geo Expansion"].ToString();
+                    dest.ContractRateData.DestinationGeoExpansion = origin["Contract Destination Geo Expansion"].ToString();
+                    dest.ContractRateData.AvgLinehaulRate = Convert.ToDouble(origin["Contract Avg Linehaul Rate"]);
+                    dest.ContractRateData.LowLinehaulRate = Convert.ToDouble(origin["Contract Low Linehaul Rate"]);
+                    dest.ContractRateData.HighLinehaulRate = Convert.ToDouble(origin["Contract High Linehaul Rate"]);
+                    dest.ContractRateData.FuelSurcharge = Convert.ToDouble(origin["Contract Fuel Surcharge"]);
+                    dest.ContractRateData.AccessorialsExcludingFuel = Convert.ToDouble(origin["Contract Avg Accessorial Excludes Fuel"]);
+                    dest.ContractRateData.Companies = Convert.ToInt32(origin["Contract # of Companies"]);
+                    dest.ContractRateData.Reports = Convert.ToInt32(origin["Contract # of Reports"]);
+                    dest.ContractRateData.LinehaulRateStdDev = Convert.ToDouble(origin["Contract Linehaul Rate StdDev"]);
+                })
+                .AfterMap((origin, dest) =>
+                {
+                    dest.SpotRateData = new SpotRateDataModel();
+                    dest.SpotRateData.OriginGeoExpansion = origin["Spot Origin Geo Expansion"].ToString();
+                    dest.SpotRateData.DestinationGeoExpansion = origin["Spot Destination Geo Expansion"].ToString();
+                    dest.SpotRateData.AvgLinehaulRate = Convert.ToDouble(origin["Spot Avg Linehaul Rate"]);
+                    dest.SpotRateData.LowLinehaulRate = Convert.ToDouble(origin["Spot Low Linehaul Rate"]);
+                    dest.SpotRateData.HighLinehaulRate = Convert.ToDouble(origin["Spot High Linehaul Rate"]);
+                    dest.SpotRateData.FuelSurcharge = Convert.ToDouble(origin["Spot Fuel Surcharge"]);
+                    dest.SpotRateData.Companies = Convert.ToInt32(origin["Spot # of Companies"]);
+                    dest.SpotRateData.Reports = Convert.ToInt32(origin["Spot # of Reports"]);
+                    dest.SpotRateData.LinehaulRateStdDev = Convert.ToDouble(origin["Spot Linehaul Rate StdDev"]);
+                });
         }
     }
 }
