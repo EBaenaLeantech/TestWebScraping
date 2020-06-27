@@ -11,8 +11,8 @@ namespace DAT_Download_Service.Models
         /// <summary>
         /// 
         /// </summary>
-        [ForeignKey("DATRateData")]
-        public int DATRateDataId { get; set; }
-        
+        [Required]
+        public virtual DATRateData DATRateData { get; set; }
+
     }
 }

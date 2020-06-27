@@ -46,5 +46,7 @@
         /// 
         /// </summary>
         public double LinehaulRateStdDev { get; set; }
+
+
     }
 }

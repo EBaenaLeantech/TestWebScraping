@@ -92,12 +92,12 @@ namespace DAT_Download_Service.Models
         /// <summary>
         /// 
         /// </summary>
-        public SpotRateDataModel SpotRateData { get; set; }
+        public virtual SpotRateDataModel SpotRateData { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public ContractRateDataModel ContractRateData { get; set; }
+        public virtual ContractRateDataModel ContractRateData { get; set; }
 
         public DATRateData()
         {

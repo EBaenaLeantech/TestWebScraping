@@ -20,6 +20,7 @@ namespace DAT_Download_Service.Mapping
                 .ForMember(d => d.OriginCity, o => o.MapFrom(s => s["Orig City"]))
                 .AfterMap((origin, dest) =>
                 {
+
                     dest.ContractRateData = new ContractRateDataModel();
                     dest.ContractRateData.OriginGeoExpansion = origin["Contract Origin Geo Expansion"].ToString();
                     dest.ContractRateData.DestinationGeoExpansion = origin["Contract Destination Geo Expansion"].ToString();

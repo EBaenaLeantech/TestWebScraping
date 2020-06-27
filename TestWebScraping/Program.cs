@@ -25,10 +25,10 @@ namespace TestWebScraping
         public static string[] loginControlIds = new string[] { "username", "password", "login" };
         public static string[] loginControlValues = new string[] { "covenantcxn1", "Connexion1", "" };
         public static string fileName = "18225 matrix CSV File.csv";
-        public static string filePath = @"C:\Users\EBAENA\Downloads";
-        public static string requestTemplatePath = @"C:\Users\EBAENA\Downloads";
+        public static string filePath = @"C:\Users\Orlando Galvez\Downloads\";
+        public static string requestTemplatePath = @"C:\Users\Orlando Galvez\Downloads\";
         public static string timeZone = "Pacific Standard Time";
-
+        
         public static MapperConfiguration config = new MapperConfiguration(cfg => {
             cfg.AddProfile(new MapperProfile());
         });
@@ -231,6 +231,7 @@ namespace TestWebScraping
 
             using (var context = new DownloadContext())
             {
+                
                 context.DatRatesData.AddRange(result);
                 context.SaveChanges();
             }
