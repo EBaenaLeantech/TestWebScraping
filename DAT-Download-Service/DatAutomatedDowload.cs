@@ -13,6 +13,7 @@ using DAT_Download_Service.Mapping;
 using DAT_Download_Service.Models;
 using System.Data;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace DAT_Download_Service
 {
@@ -23,17 +24,19 @@ namespace DAT_Download_Service
         public static IWebDriver webDriver = new ChromeDriver();
         public static string[] loginControlIds = new string[] { "username", "password", "login" };
         public static string[] loginControlValues = new string[] { "covenantcxn1", "Connexion1", "" };
-        public static string fileName = "18225 matrix CSV File.csv";
-        public static string filePath = @"C:/Users/Orlando Galvez/Downloads/";
-        public static string requestTemplatePath = @"C:\Users\Orlando Galvez\Downloads\";
+        public static string fileName = "RequestLanesTemplate.csv";
+        public static string filePath = @"C:\Users\EBAENA\Downloads\";
+        public static string requestTemplatePath = @"C:\Users\EBAENA\Downloads\";
         public static string timeZone = "Pacific Standard Time";
+        public static EventLog systemLog;
 
         public static MapperConfiguration config = new MapperConfiguration(cfg => {
             cfg.AddProfile(new MapperProfile());
         });
 
-        public static void RunWebScraping()
+        public static void RunWebScraping(EventLog logger)
         {
+            systemLog = logger;
 
             try
             {
@@ -45,13 +48,13 @@ namespace DAT_Download_Service
                 webDriver.Navigate().GoToUrl(multiLane);
                 Thread.Sleep(10000);
                 UploadLanesTemplate();
-                Thread.Sleep(10000);
+                Thread.Sleep(30000);
                 ReviewWindow();
-                Thread.Sleep(10000);
+                Thread.Sleep(30000);
                 SubmitRequestWindow();
-                Thread.Sleep(20000);
+                Thread.Sleep(30000);
                 DownloadFile();
-                Thread.Sleep(20000);
+                Thread.Sleep(30000);
                 webDriver.Close();
                 Thread.Sleep(5000);
                 ExcelReader();
@@ -60,10 +63,8 @@ namespace DAT_Download_Service
             {
                 webDriver.Close();
                 webDriver.Quit();
-                Console.WriteLine($"Error Trying to login: {ex.Message}");
+                systemLog.WriteEntry($"Error in RunWebScraping: {ex.Message}");
             }
-
-            Console.ReadKey();
         }
 
         /// <summary>
@@ -94,7 +95,7 @@ namespace DAT_Download_Service
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error Trying to login: {ex.Message}");
+                throw new Exception($"LoginAutomated: {ex.Message}");
             }
         }
 
@@ -115,7 +116,7 @@ namespace DAT_Download_Service
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception($"UploadLanesTemplate: {ex.Message}");
             }
         }
 
@@ -123,13 +124,13 @@ namespace DAT_Download_Service
         {
             try
             {
-                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(25));
+                WebDriverWait wait = new WebDriverWait(webDriver, TimeSpan.FromSeconds(30));
                 IWebElement element = wait.Until(e => e.FindElement(By.XPath("//*[@id='main']/div/div[2]/div/div[1]/footer/div[3]/button")));
                 element.Click();
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception($"ReviewWindow: {ex.Message}");
             }
         }
 
@@ -174,7 +175,7 @@ namespace DAT_Download_Service
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception($"SubmitRequestWindow: {ex.Message}");
             }
         }
 
@@ -189,53 +190,59 @@ namespace DAT_Download_Service
             }
             catch (Exception ex)
             {
-
-                throw ex;
+                throw new Exception($"DownloadFile: {ex.Message}");
             }
         }
 
         static void ExcelReader()
         {
-
-            TimeZoneInfo Pacific_Standard_Time = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
-            DateTime dateTime_Pacific = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Pacific_Standard_Time);
-            var dateString = dateTime_Pacific.ToString("yyyyMMdd");
-
-            DirectoryInfo dir = new DirectoryInfo(filePath);
-
-            string partialName = $"{fileName}-{dateString}";
-            FileInfo[] file = dir.GetFiles(partialName + "*.csv", SearchOption.TopDirectoryOnly).OrderByDescending(p => p.CreationTimeUtc).ToArray();
-
-            if (file == null || file.Length <= 0)
+            try
             {
+                TimeZoneInfo Pacific_Standard_Time = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
+                DateTime dateTime_Pacific = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Pacific_Standard_Time);
+                var dateString = dateTime_Pacific.ToString("yyyyMMdd");
 
-            }
+                DirectoryInfo dir = new DirectoryInfo(filePath);
 
-            System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
-            FileStream stream = File.Open(file[0].FullName, FileMode.Open, FileAccess.Read);
-            IExcelDataReader excelReader = ExcelReaderFactory.CreateCsvReader(stream);
-            ExcelDataSetConfiguration excelDataSetConfiguration = new ExcelDataSetConfiguration
-            {
-                ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                string partialName = $"{fileName}-{dateString}";
+                FileInfo[] file = dir.GetFiles(partialName + "*.csv", SearchOption.TopDirectoryOnly).OrderByDescending(p => p.CreationTimeUtc).ToArray();
+
+                if (file == null || file.Length <= 0)
                 {
-                    UseHeaderRow = true
+
                 }
-            };
 
-            var dataSet = excelReader.AsDataSet(excelDataSetConfiguration);
-            var dataTable = dataSet.Tables[0];
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                FileStream stream = File.Open(file[0].FullName, FileMode.Open, FileAccess.Read);
+                IExcelDataReader excelReader = ExcelReaderFactory.CreateCsvReader(stream);
+                ExcelDataSetConfiguration excelDataSetConfiguration = new ExcelDataSetConfiguration
+                {
+                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                    {
+                        UseHeaderRow = true
+                    }
+                };
 
-            IMapper mapper = config.CreateMapper();
-            List<DataRow> rows = new List<DataRow>(dataTable.Rows.OfType<DataRow>());
-            List<DATRateData> result = mapper.Map<List<DataRow>, List<DATRateData>>(rows);
+                var dataSet = excelReader.AsDataSet(excelDataSetConfiguration);
+                var dataTable = dataSet.Tables[0];
 
-            using (var context = new DownloadContext())
-            {
-                context.DatRatesData.AddRange(result);
-                context.SaveChanges();
+                IMapper mapper = config.CreateMapper();
+                List<DataRow> rows = new List<DataRow>(dataTable.Rows.OfType<DataRow>());
+                List<DATRateData> result = mapper.Map<List<DataRow>, List<DATRateData>>(rows);
+
+                using (var context = new DownloadContext())
+                {
+                    context.DatRatesData.AddRange(result);
+                    context.SaveChanges();
+                }
+
+                excelReader.Close();
             }
-
-            excelReader.Close();
+            catch (Exception ex)
+            {
+                throw new Exception($"ExcelReader: {ex.Message}");
+            }
+            
         }
 
     }

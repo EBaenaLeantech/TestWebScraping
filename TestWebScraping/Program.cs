@@ -4,6 +4,7 @@ using DAT_Download_Service;
 using DAT_Download_Service.Mapping;
 using DAT_Download_Service.Models;
 using ExcelDataReader;
+using Microsoft.Win32.TaskScheduler;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
@@ -24,12 +25,14 @@ namespace TestWebScraping
         public static IWebDriver webDriver = new ChromeDriver();
         public static string[] loginControlIds = new string[] { "username", "password", "login" };
         public static string[] loginControlValues = new string[] { "covenantcxn1", "Connexion1", "" };
-        public static string fileName = "18225 matrix CSV File.csv";
-        public static string filePath = @"C:\Users\Orlando Galvez\Downloads\";
-        public static string requestTemplatePath = @"C:\Users\Orlando Galvez\Downloads\";
+        public static string fileName = "RequestLanesTemplate.csv";
+        public static string filePath = @"C:\Users\EBAENA\Downloads\";
+        public static string requestTemplatePath = @"C:\Users\EBAENA\Downloads\";
         public static string timeZone = "Pacific Standard Time";
-        
-        public static MapperConfiguration config = new MapperConfiguration(cfg => {
+        private static string appPath = @"C:\Users\EBAENA\Downloads\WebScraping\TestWebScraping.exe";
+
+        public static MapperConfiguration config = new MapperConfiguration(cfg =>
+        {
             cfg.AddProfile(new MapperProfile());
         });
 
@@ -55,16 +58,18 @@ namespace TestWebScraping
                 //Thread.Sleep(20000);
                 //webDriver.Close();
                 //Thread.Sleep(5000);
-                ExcelReader();
+                //ExcelReader();
+                CreateTaskSchedule();
             }
             catch (Exception ex)
             {
-                webDriver.Close();
-                webDriver.Quit();
                 Console.WriteLine($"Error Trying to login: {ex.Message}");
             }
-
-            Console.ReadKey();
+            finally
+            {
+                webDriver.Close();
+                webDriver.Quit();
+            }
         }
 
         /// <summary>
@@ -197,7 +202,7 @@ namespace TestWebScraping
 
         static void ExcelReader()
         {
-           
+
             TimeZoneInfo Pacific_Standard_Time = TimeZoneInfo.FindSystemTimeZoneById(timeZone);
             DateTime dateTime_Pacific = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Pacific_Standard_Time);
             var dateString = dateTime_Pacific.ToString("yyyyMMdd");
@@ -205,11 +210,11 @@ namespace TestWebScraping
             DirectoryInfo dir = new DirectoryInfo(filePath);
 
             string partialName = $"{fileName}-{dateString}";
-            FileInfo[] file = dir.GetFiles(partialName + "*.csv", SearchOption.TopDirectoryOnly).OrderByDescending( p=> p.CreationTimeUtc).ToArray();
+            FileInfo[] file = dir.GetFiles(partialName + "*.csv", SearchOption.TopDirectoryOnly).OrderByDescending(p => p.CreationTimeUtc).ToArray();
 
             if (file == null || file.Length <= 0)
             {
-    
+
             }
 
             System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -231,7 +236,7 @@ namespace TestWebScraping
 
             using (var context = new DownloadContext())
             {
-                
+
                 context.DatRatesData.AddRange(result);
                 context.SaveChanges();
             }
@@ -239,6 +244,39 @@ namespace TestWebScraping
             excelReader.Close();
         }
 
+        static void CreateTaskSchedule()
+        {
+            try
+            {
+                TaskDefinition td = TaskService.Instance.NewTask();
+                
+                // Create a new task definition and assign properties
+                td.RegistrationInfo.Description = "DAT Dowloader Service";
+                td.Principal.LogonType = TaskLogonType.InteractiveToken;
+
+                // Add a trigger that will fire the task at this time every other day
+                MonthlyTrigger dt = (MonthlyTrigger)td.Triggers.Add(new MonthlyTrigger(15));
+                dt.Repetition.Duration = TimeSpan.FromHours(1);
+                //dt.StartBoundary = Convert.ToDateTime(DateTime.Now.Date.ToString() + " 00:00");
+
+                // Add an action that will launch Notepad whenever the trigger fires
+                td.Actions.Add(new ExecAction(appPath));
+
+                // Register the task in the root folder
+                const string taskName = "DATDownloader";
+                TaskService.Instance.RootFolder.RegisterTaskDefinition(
+                    taskName,
+                    td,
+                    TaskCreation.CreateOrUpdate,
+                    "LAPTOP-S6LCQIHP\\EBAENA",
+                    "Odragde.2020",
+                    TaskLogonType.InteractiveToken);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 
     public static class Extensions
